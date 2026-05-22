@@ -4,6 +4,11 @@ Cross-platform tools for the [betl][betl] ecosystem.
 
 [betl]: https://github.com/jasonuithol/betl-native
 
+**[▶ Try the live yaml-ui demo](https://jasonuithol.github.io/betl-tools/)** —
+the betl-dotnet flavored full-coverage pipeline pre-loaded in the
+browser-based viewer/editor; no install required. The site is published
+from this repo's `betl-yaml-ui/` source via `.github/workflows/pages.yml`.
+
 ## Contents
 
 | Directory               | What                                                          |
