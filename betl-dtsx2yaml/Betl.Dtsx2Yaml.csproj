@@ -24,6 +24,29 @@
     <LangVersion>latest</LangVersion>
     <InvariantGlobalization>true</InvariantGlobalization>
     <DebugType>none</DebugType>
+    <!-- Tool stays buildable against the pinned net8.0 surface but
+         runs on whatever .NET runtime the user has installed (net8.0
+         or any later major). Without this, the tool throws
+         FrameworkDependencyResolutionFailure on machines that only
+         have a newer runtime. -->
+    <RollForward>LatestMajor</RollForward>
+
+    <!--
+      Distribute as a .NET global tool. After 'dotnet pack -c Release',
+      install via 'dotnet tool install -g Betl.Dtsx2Yaml' (once published
+      to NuGet) or locally by passing the bin/Release nupkg via the
+      add-source flag. The installed command is 'betl-dtsx2yaml'.
+    -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>betl-dtsx2yaml</ToolCommandName>
+    <Version>0.10.0-preview1</Version>
+    <Authors>Jason Uithol</Authors>
+    <Description>SSIS .dtsx → betl YAML converter. One-shot developer tool for migrating existing SSIS packages to the betl pipeline format.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/jasonuithol/betl-tools</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jasonuithol/betl-tools</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>ssis;dtsx;yaml;converter;etl</PackageTags>
   </PropertyGroup>
 
   <!--
