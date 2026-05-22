@@ -4,11 +4,14 @@
 # Overrides:
 #   BETL_IMAGE        image tag to apply (default: betl:dev)
 #   BETL_RUNTIME      podman | docker (default: auto-detect)
-#   BETL_NATIVE_REF   git ref of betl-native to clone (default: master)
+#   BETL_NATIVE_REF   git ref (branch / tag / SHA) of betl-native to clone.
+#                     Default: resolve betl-native master HEAD to a SHA via
+#                     `git ls-remote`, so docker's build cache auto-busts
+#                     whenever upstream master moves.
 #
 # Forwards extra args to the runtime, e.g.:
 #   ./build.sh --no-cache
-#   ./build.sh --build-arg BETL_NATIVE_REF=v0.2.1
+#   ./build.sh --build-arg HTTP_PROXY=...
 
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -26,11 +29,22 @@ if [[ -z "$runtime" ]]; then
     fi
 fi
 
-build_args=()
-if [[ -n "${BETL_NATIVE_REF:-}" ]]; then
-    build_args+=(--build-arg "BETL_NATIVE_REF=$BETL_NATIVE_REF")
+# Resolve to a concrete SHA when no explicit ref is given so docker's
+# build cache busts whenever upstream master moves. Falls back to the
+# literal "master" if git isn't installed or the remote is unreachable
+# (in which case the user can pass --no-cache to force a fresh clone).
+if [[ -z "${BETL_NATIVE_REF:-}" ]]; then
+    if command -v git >/dev/null 2>&1; then
+        resolved=$(git ls-remote \
+            https://github.com/jasonuithol/betl-native.git master \
+            2>/dev/null | awk '{print $1}' | head -n1 || true)
+        BETL_NATIVE_REF=${resolved:-master}
+    else
+        BETL_NATIVE_REF=master
+    fi
 fi
 
-echo "[build] $runtime build -t $image -f Containerfile $repo" >&2
+echo "[build] $runtime build -t $image -f Containerfile (BETL_NATIVE_REF=$BETL_NATIVE_REF)" >&2
 exec "$runtime" build -t "$image" -f "$repo/Containerfile" \
-     "${build_args[@]}" "$@" "$repo"
+     --build-arg "BETL_NATIVE_REF=$BETL_NATIVE_REF" \
+     "$@" "$repo"

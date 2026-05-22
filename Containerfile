@@ -10,11 +10,11 @@
 # actually load at runtime. The final image is roughly 600–800 MB,
 # dominated by the self-contained .NET runtime bundled with dtsx2yaml.
 #
-# The C engine source comes from a `git clone` of betl-native at build
-# time so betl-tools (this repo) stays self-contained. Pin the engine
-# revision with --build-arg BETL_NATIVE_REF=<sha-or-tag>; the default is
-# `master`, which docker caches by the literal arg value, so pass
-# --no-cache (or change BETL_NATIVE_REF) to pick up upstream commits.
+# The C engine source comes from a `git fetch` of betl-native at build
+# time so betl-tools (this repo) stays self-contained. The default ref
+# is resolved by betl-container/build.sh to the current master HEAD SHA,
+# so docker's build cache busts whenever upstream master moves. Pin to
+# a specific revision with --build-arg BETL_NATIVE_REF=<sha-or-tag>.
 
 # ============================================================================
 # 1) build — full toolchain + every optional library betl knows about
@@ -77,7 +77,15 @@ COPY . /src/betl-tools
 
 ARG BETL_NATIVE_REPO=https://github.com/jasonuithol/betl-native.git
 ARG BETL_NATIVE_REF=master
-RUN git clone --depth 1 --branch "$BETL_NATIVE_REF" "$BETL_NATIVE_REPO" /src/betl-native
+# `git fetch --depth 1 origin <ref>` accepts branches, tags, AND raw
+# SHAs (GitHub honors uploadpack.allowReachableSHA1InWant). `git clone
+# --branch` would fail for SHAs, which is what build.sh resolves the
+# default to so the cache busts when upstream master moves.
+RUN git init /src/betl-native \
+    && cd /src/betl-native \
+    && git remote add origin "$BETL_NATIVE_REPO" \
+    && git fetch --depth 1 origin "$BETL_NATIVE_REF" \
+    && git checkout FETCH_HEAD
 
 # C engine + providers. CMake's install targets land at /opt/betl/{bin,
 # include,lib,share}; providers go under lib/betl/providers/ flat.
