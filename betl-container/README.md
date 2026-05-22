@@ -1,20 +1,25 @@
 # betl container
 
-Single-image bundle of the C engine, providers, the dtsx2yaml
-converter, and the yaml-ui. Builds against pinned Debian bookworm
-shared libraries so it's reproducible across hosts.
+Single-image bundle of the C engine (cloned from
+[betl-native](https://github.com/jasonuithol/betl-native) at build
+time), providers, the dtsx2yaml converter, and the yaml-ui. Builds
+against pinned Debian bookworm shared libraries so it's reproducible
+across hosts.
+
+Pin the engine to a specific commit with `BETL_NATIVE_REF=<sha-or-tag>
+betl-container/build.sh` (default: `master`).
 
 ## Build
 
 From the repo root:
 
 ```sh
-tools/betl-container/build.sh
+betl-container/build.sh
 ```
 
 This wraps `podman build -t betl:dev -f Containerfile .` (or `docker
 build …` — the script auto-detects). Extra flags are forwarded, e.g.
-`tools/betl-container/build.sh --no-cache`. Override the tag or
+`betl-container/build.sh --no-cache`. Override the tag or
 runtime with `BETL_IMAGE=` / `BETL_RUNTIME=`.
 
 The first build downloads the .NET 8 SDK, apt packages, and builds
@@ -26,14 +31,14 @@ build layer. The runtime image is ~700 MB.
 Use the wrapper:
 
 ```sh
-tools/betl-container/betl validate examples/01-csv-to-postgres/pipeline.betl.yml
-tools/betl-container/betl run     examples/01-csv-to-postgres/pipeline.betl.yml
-tools/betl-container/betl convert path/to/package.dtsx
-tools/betl-container/betl ui      # http://127.0.0.1:8765
-tools/betl-container/betl --version
+betl-container/betl validate examples/01-csv-to-postgres/pipeline.betl.yml
+betl-container/betl run     examples/01-csv-to-postgres/pipeline.betl.yml
+betl-container/betl convert path/to/package.dtsx
+betl-container/betl ui      # http://127.0.0.1:8765
+betl-container/betl --version
 ```
 
-`tools/betl-container/run-container.sh` is a thin alias that defaults
+`betl-container/run-container.sh` is a thin alias that defaults
 to `ui` when called with no args — handy as a `Start` button target.
 
 The wrapper bind-mounts `$PWD` at `/workspace`, so paths passed to
@@ -65,12 +70,12 @@ on demand; DSN-style fields get a `key=value` pair editor.
 - `BETL_IMAGE` — tag to run (default: `betl:dev`).
 - `BETL_RUNTIME` — `podman` or `docker` (default: auto-detect).
 - `BETL_UI_PORT` — host port for `betl ui` (default: `8765`).
-- `BETL_DEV=1` — bind-mount `tools/betl-yaml-ui/` over the image's
+- `BETL_DEV=1` — bind-mount `betl-yaml-ui/` over the image's
   copy and pass `--reload` to uvicorn inside the container. Use this
   while iterating on UI code so changes to `server.py` / `index.html`
   on the host take effect without rebuilding the image:
   ```
-  BETL_DEV=1 tools/betl-container/run-container.sh
+  BETL_DEV=1 betl-container/run-container.sh
   ```
 - Any other `BETL_*` env var is forwarded into the container. Pipelines
   that reference `${env.BETL_TEST_PG_DSN}` etc. resolve as long as you

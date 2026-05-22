@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/betl-container/betl — host-side wrapper for the betl container.
+# betl-container/betl — host-side wrapper for the betl container.
 #
 # Bind-mounts the current working directory at /workspace and forwards
 # the args. The first arg picks the tool:
@@ -16,7 +16,7 @@
 # Override the image with $BETL_IMAGE if you've tagged it differently.
 # Override the runtime with $BETL_RUNTIME=podman|docker; auto-detects.
 #
-# BETL_DEV=1 bind-mounts tools/betl-yaml-ui/ over the in-image copy
+# BETL_DEV=1 bind-mounts betl-yaml-ui/ over the in-image copy
 # so UI source edits (server.py, index.html) appear without a rebuild,
 # and passes --reload to uvicorn inside the container. Use for UI
 # iteration; turn off when you're done so the image is authoritative.
@@ -24,7 +24,7 @@
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
-repo="$(cd "$here/../.." && pwd)"
+repo="$(cd "$here/.." && pwd)"
 
 image=${BETL_IMAGE:-betl:dev}
 
@@ -52,7 +52,7 @@ fi
 # server.py reads its argv from the container entrypoint, so passing
 # BETL_DEV through the env lets the in-image launcher add --reload.
 if [[ -n "${BETL_DEV:-}" ]]; then
-    opts+=(-v "$repo/tools/betl-yaml-ui:/opt/betl/share/yaml-ui:ro"
+    opts+=(-v "$repo/betl-yaml-ui:/opt/betl/share/yaml-ui:ro"
            -e BETL_DEV=1)
 fi
 

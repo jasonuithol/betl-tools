@@ -9,9 +9,9 @@
     deploy size small and lets us pull in Roslyn/CodeAnalysis-style
     libraries later (e.g. for VB.NET → C# translation).
 
-    Built via the CMake custom target `dtsx2yaml`; the resulting
-    binary lives at tools/betl-dtsx2yaml/out/Betl.Dtsx2Yaml.dll and
-    runs via `dotnet tools/betl-dtsx2yaml/out/Betl.Dtsx2Yaml.dll <args>`.
+    Built via `dotnet publish betl-dtsx2yaml/Betl.Dtsx2Yaml.csproj`
+    or via the Containerfile in the repo root for a self-contained
+    linux-x64 binary.
   -->
 
   <PropertyGroup>

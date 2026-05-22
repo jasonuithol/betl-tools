@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/betl-container/run-container.sh — start the betl container.
+# betl-container/run-container.sh — start the betl container.
 #
 # Defaults to `ui` (the yaml-ui on http://127.0.0.1:8765) which is the
 # common case. Pass any other subcommand to override:

@@ -64,7 +64,7 @@ def discover_dtsx2yaml(root: Path) -> str | None:
     """Find the dtsx2yaml binary. Order: env, repo publish dir."""
     if DTSX2YAML_BIN and Path(DTSX2YAML_BIN).exists():
         return DTSX2YAML_BIN
-    cand = root / "tools/betl-dtsx2yaml/publish-linux-x64/Betl.Dtsx2Yaml"
+    cand = root / "betl-dtsx2yaml/publish-linux-x64/Betl.Dtsx2Yaml"
     if cand.exists():
         return str(cand)
     return None
@@ -246,7 +246,7 @@ async def convert(request: Request):
     bin_path = discover_dtsx2yaml(ROOT)
     if not bin_path:
         raise HTTPException(503,
-            "dtsx2yaml binary not found — build it (see tools/betl-dtsx2yaml/) "
+            "dtsx2yaml binary not found — build it (see betl-dtsx2yaml/) "
             "or set BETL_DTSX2YAML")
     out_path = p.with_suffix(".betl.yml")
     res = _run([bin_path, str(p), "-o", str(out_path)])
@@ -322,7 +322,7 @@ def main():
     ap = argparse.ArgumentParser(description="betl-yaml-ui server")
     ap.add_argument(
         "--root",
-        default=str(HERE.parent.parent),
+        default=str(HERE.parent),
         help="base directory the server may browse (default: repo root)",
     )
     ap.add_argument("--host", default="127.0.0.1")
@@ -341,7 +341,7 @@ def main():
         "--dtsx2yaml",
         default=os.environ.get("BETL_DTSX2YAML"),
         help="path to the dtsx2yaml binary (default: $BETL_DTSX2YAML or "
-             "<root>/tools/betl-dtsx2yaml/publish-linux-x64/Betl.Dtsx2Yaml)",
+             "<root>/betl-dtsx2yaml/publish-linux-x64/Betl.Dtsx2Yaml)",
     )
     args = ap.parse_args()
 

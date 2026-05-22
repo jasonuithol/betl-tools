@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# tools/betl-yaml-ui/run.sh — launch the pipeline YAML viewer/editor.
+# betl-yaml-ui/run.sh — launch the pipeline YAML viewer/editor.
 #
 # Usage:
-#   tools/betl-yaml-ui/run.sh [server.py args...]
+#   betl-yaml-ui/run.sh [server.py args...]
 #
 # First invocation creates .venv/ here and installs fastapi + uvicorn.
 # Subsequent runs reuse it. Pass any extra args through to server.py
