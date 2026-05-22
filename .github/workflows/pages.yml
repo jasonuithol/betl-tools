@@ -1,0 +1,75 @@
+# Publishes the yaml-ui as a static GitHub Pages site with the
+# betl-dotnet flavored full-coverage pipeline pre-loaded as the demo.
+# The HTML detects the *.github.io hostname and short-circuits every
+# /api/* call to canned responses (DEMO_MODE shim in index.html), so
+# the viewer + inspector + SQL editor + run-form all work end-to-end
+# with no backend attached.
+#
+# Trigger: any push that touches the UI or this workflow, plus a
+# manual "Run workflow" button (use that to refresh the demo pipeline
+# when betl-dotnet updates examples/full-coverage/).
+#
+# First publish needs Pages enabled in the repo Settings → Pages →
+# Source = "GitHub Actions". The workflow does that for you on its
+# first run via the actions/configure-pages step.
+
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'betl-yaml-ui/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pull the betl-dotnet flavored full-coverage pipeline.betl.yml
+      # for the demo. Cross-cloning rather than vendoring keeps the demo
+      # in sync with whatever's on betl-dotnet master without manual
+      # copy-paste maintenance. Pinnable via BETL_DOTNET_REF if needed
+      # (defaults to main).
+      - name: Clone betl-dotnet for the demo pipeline
+        run: |
+          git clone --depth 1 \
+              https://github.com/jasonuithol/betl-dotnet.git \
+              /tmp/betl-dotnet
+
+      - name: Assemble demo bundle
+        run: |
+          mkdir -p _site
+          cp betl-yaml-ui/index.html _site/index.html
+          cp /tmp/betl-dotnet/examples/full-coverage/pipeline.betl.yml \
+             _site/demo-pipeline.betl.yml
+          # Skip Jekyll processing — we're shipping the HTML as-is.
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
