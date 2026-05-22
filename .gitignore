@@ -1,0 +1,10 @@
+# .NET build outputs
+**/bin/
+**/obj/
+
+# Python build/cache artifacts
+**/__pycache__/
+**/*.pyc
+
+# Local virtualenvs (also covered per-tool but listed here for clarity)
+**/.venv/

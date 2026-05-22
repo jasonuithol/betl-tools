@@ -47,12 +47,18 @@ DTSX2YAML_BIN: str | None = os.environ.get("BETL_DTSX2YAML") or None
 
 
 def discover_betl(root: Path) -> str | None:
-    """Find the betl CLI. Order: BETL_BIN env, PATH, <root>/build*/betl."""
+    """Find the betl CLI. Order: BETL_BIN env, PATH (betl then betl-dotnet),
+    then the C-engine build dirs under <root>."""
     if BETL_BIN and Path(BETL_BIN).exists():
         return BETL_BIN
-    on_path = shutil.which("betl")
-    if on_path:
-        return on_path
+    # `betl` is the canonical name (matches the YAML's worldview and the
+    # SPEC). `betl-dotnet` is the .NET runtime's disambiguated form,
+    # produced by `dotnet tool install -g Betl.Dotnet` — present on
+    # native-Windows installs that skip the C-engine path entirely.
+    for name in ("betl", "betl-dotnet"):
+        on_path = shutil.which(name)
+        if on_path:
+            return on_path
     for cand in ("build/betl", "build-make/betl", "build-asan/betl", "build-tsan/betl"):
         p = root / cand
         if p.exists():
@@ -61,9 +67,12 @@ def discover_betl(root: Path) -> str | None:
 
 
 def discover_dtsx2yaml(root: Path) -> str | None:
-    """Find the dtsx2yaml binary. Order: env, repo publish dir."""
+    """Find the dtsx2yaml binary. Order: env, PATH, repo publish dir."""
     if DTSX2YAML_BIN and Path(DTSX2YAML_BIN).exists():
         return DTSX2YAML_BIN
+    on_path = shutil.which("betl-dtsx2yaml")
+    if on_path:
+        return on_path
     cand = root / "betl-dtsx2yaml/publish-linux-x64/Betl.Dtsx2Yaml"
     if cand.exists():
         return str(cand)
@@ -335,7 +344,7 @@ def main():
     ap.add_argument(
         "--betl",
         default=os.environ.get("BETL_BIN"),
-        help="path to the betl CLI (default: $BETL_BIN, PATH, then <root>/build*/betl)",
+        help="path to the betl CLI (default: $BETL_BIN, then 'betl' or 'betl-dotnet' on PATH, then <root>/build*/betl)",
     )
     ap.add_argument(
         "--dtsx2yaml",
